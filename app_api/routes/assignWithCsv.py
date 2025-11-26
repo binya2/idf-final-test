@@ -1,20 +1,43 @@
-from fastapi import APIRouter, UploadFile, File
+from typing import Literal
 
-from app_api.utils.file_service import process_file
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from starlette import status
 
-router = APIRouter(prefix="/assignWithCsv", tags=["assignWithCsv"])
+from app_api.db.base import AbstractDB
+from app_api.db.session import get_db
+from app_api.routes.handler import _build_repositories_and_session, _get_strategy
+from app_api.services.assignment_service import AssignmentService
+from app_api.utils.file_service import parse_soldiers_csv
+
+router = APIRouter(tags=["assignWithCsv"])
 
 
-@router.post("/upload")
-def upload_users_file(file: UploadFile = File(...), has_header: bool = True):
-    file_details = process_file(file, has_header)
-    if file_details["content_type"] == "csv":
-        header = file_details["header"]
-        data = [
-            dict(zip(header, row))
-            for row in file_details["data"]
-        ]
-    else:
-        data = file_details["data"]
-    print(file_details)
-    return data
+@router.post("/assignWithCsv")
+async def assign_with_csv(
+        file: UploadFile = File(...),
+        strategy: Literal["distance", "distanceThenRank"] = "distance",
+        db: AbstractDB = Depends(get_db),
+) -> dict:
+    content = (await file.read()).decode("utf-8")
+    soldiers = parse_soldiers_csv(content)
+
+    session_ctx, session, s_repo, d_repo, r_repo = _build_repositories_and_session(db)
+    try:
+        strat = _get_strategy(strategy)
+        service = AssignmentService(
+            soldier_repo=s_repo,
+            dorm_repo=d_repo,
+            room_repo=r_repo,
+            session=session,
+            strategy=strat,
+        )
+        result = service.assign_from_soldiers(soldiers)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    finally:
+        session_ctx.__exit__(None, None, None)
+
+    return result

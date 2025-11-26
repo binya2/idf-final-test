@@ -1,11 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app_api.routes import assignWithCsv
+from app_api.routes import appendWithCsv, assignWithCsv, release
 
 app = FastAPI(title="IDF Final Test")
 app.include_router(assignWithCsv)
-
+app.include_router(appendWithCsv)
+app.include_router(release)
 
 if __name__ == "__main__":
     uvicorn.run(

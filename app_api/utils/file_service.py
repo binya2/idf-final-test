@@ -1,142 +1,70 @@
+from __future__ import annotations
+
 import csv
-import io
-import json
-from typing import Dict, List, Optional
+from io import StringIO
+from typing import List
 
-from fastapi import UploadFile, HTTPException
+from app_api.models.models import Soldier
 
-
-# --------------------------------------------------
-# הכנתי את הקובץ הזה לפני כמה ימים לשימוש אישי לאחר
-# כמה תרגילים שהביאו לנו, מבין את החשד אולי לשימוש
-# בAI אבל זה קוד כתוב מראש שיש לי והתאמתי אותו למבחן
-# ---------------------------------------------------
-
-
-# ---------------------------------------------
-# 1) כלי עזר בסיסיים
-# ---------------------------------------------
-
-def decode_bytes(content_bytes: bytes) -> str:
-    """Decode file bytes into UTF-8 text."""
-    try:
-        return content_bytes.decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="File must be UTF-8 encoded")
+CSV_HEADERS = [
+    "מספר אישי",
+    "שם פרטי",
+    "שם משפחה",
+    "מין",
+    "עיר מגורים",
+    "מרחק מהבסיס",
+]
 
 
-def strip_row(row: List[str]) -> List[str]:
-    """Trim all cells in a row."""
-    return [cell.strip() for cell in row]
-
-
-def is_comment_or_empty(row: List[str], comment_char="#") -> bool:
-    """Check if a row is empty or a comment."""
-    if not row:
-        return True
-    cleaned = "".join(row).strip()
-    return cleaned == "" or cleaned.startswith(comment_char)
-
-
-# ---------------------------------------------
-# 2) Validators
-# ---------------------------------------------
-
-def normalize_row_length(row: List[str], header_len: int) -> List[str]:
-    """Ensure row matches header length (pad or trim)."""
-    if len(row) < header_len:
-        row += [""] * (header_len - len(row))
-    elif len(row) > header_len:
-        row = row[:header_len]
-    return row
-
-
-# ---------------------------------------------
-# 3) CSV processing
-# ---------------------------------------------
-
-def parse_csv(content_str: str, has_header: bool = True) -> Dict:
-    """Parse CSV string into header + rows."""
-    input_io = io.StringIO(content_str)
-    reader = csv.reader(input_io)
-
-    header: Optional[List[str]] = None
-    data: List[List[str]] = []
-
-    first = True
-    for row in reader:
-        if is_comment_or_empty(row):
-            continue
-
-        row = strip_row(row)
-
-        if first and has_header:
-            header = row
-            first = False
-            continue
-
-        if has_header and header:
-            row = normalize_row_length(row, len(header))
-
-        data.append(row)
-        first = False
-
-    return {
-        "header": header,
-        "data": data
-    }
-
-
-# ---------------------------------------------
-# 4) JSON processing
-# ---------------------------------------------
-
-def parse_json(content_str: str) -> List[dict]:
-    """Parse JSON string into Python object."""
-    try:
-        return json.loads(content_str)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON file")
-
-
-# ---------------------------------------------
-# 5) פונקציה ראשית – מעבדת כל קובץ שמגיע ל-FastAPI
-# ---------------------------------------------
-
-def process_file(file: UploadFile, has_header: bool = True) -> Dict:
+def parse_soldiers_csv(content: str) -> List[Soldier]:
     """
-    Main file processor:
-    - Supports CSV & JSON
-    - Cleans rows
-    - Returns ready-to-use structure
+    מצפה ל-CSV עם כותרת בעברית:
+    מספר אישי,שם פרטי,שם משפחה,מין,עיר מגורים,מרחק מהבסיס
     """
-    content_type = file.content_type
-    filename = file.filename
+    reader = csv.DictReader(StringIO(content))
+    _validate_headers(reader.fieldnames)
 
-    content_bytes = file.file.read()
-    file.file.seek(0)
+    result: List[Soldier] = []
+    for index, row in enumerate(reader, start=2):
+        soldier = _parse_row_to_soldier(row, line_number=index)
+        if soldier is not None:
+            result.append(soldier)
 
-    content_str = decode_bytes(content_bytes)
+    return result
 
-    # CSV
-    if content_type == "text/csv" or filename.endswith(".csv"):
-        parsed = parse_csv(content_str, has_header)
-        return {
-            "filename": filename,
-            "content_type": "csv",
-            "header": parsed["header"],
-            "data": parsed["data"]
-        }
 
-    # JSON
-    if content_type == "application/json" or filename.endswith(".json"):
-        parsed = parse_json(content_str)
-        return {
-            "filename": filename,
-            "content_type": "json",
-            "header": None,
-            "data": parsed
-        }
+def _validate_headers(fieldnames: list[str] | None) -> None:
+    if fieldnames is None:
+        return
+    if "מספר אישי" not in fieldnames:
+        raise ValueError("קובץ CSV ללא עמודת 'מספר אישי'")
 
-    # Unsupported
-    raise HTTPException(status_code=400, detail="Unsupported file type")
+
+def _parse_row_to_soldier(
+        row: dict[str, str],
+        line_number: int,
+) -> Soldier | None:
+    personal_number = (row.get("מספר אישי") or "").strip()
+    if not personal_number:
+        return None
+
+    first_name = (row.get("שם פרטי") or "").strip()
+    last_name = (row.get("שם משפחה") or "").strip()
+    gender = (row.get("מין") or "").strip()
+    city = (row.get("עיר מגורים") or "").strip()
+    distance_raw = (row.get("מרחק מהבסיס") or "").strip()
+
+    try:
+        distance_km = int(distance_raw)
+    except ValueError:
+        return None
+
+    return Soldier(
+        personal_number=personal_number,
+        first_name=first_name,
+        last_name=last_name,
+        gender=gender,
+        city=city,
+        distance_km=distance_km,
+        rank=None,
+    )
