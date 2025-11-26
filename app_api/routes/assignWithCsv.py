@@ -17,5 +17,4 @@ def upload_users_file(file: UploadFile = File(...), has_header: bool = True):
     else:
         data = file_details["data"]
     print(file_details)
-    return {"id": 1,
-            "masseg": "הקובץ הגיע"}
+    return data
