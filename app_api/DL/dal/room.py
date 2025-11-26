@@ -26,7 +26,7 @@ class SQLiteRoomRepository(RoomRepository):
     def clear_all_assignments(self) -> None:
         soldiers = self.session.exec(select(Soldier)).all()
         for s in soldiers:
-            s.dorm_name = None
+            s.welling_house_id = None
             s.room_id = None
             s.status = AssignmentStatusEnum.WAITING
             self.session.add(s)

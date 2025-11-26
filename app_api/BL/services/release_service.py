@@ -55,7 +55,7 @@ class ReleaseService:
             return
 
         next_soldier.room_id = freed_room_id
-        next_soldier.dorm_name = room.dorm_name
+        next_soldier.welling_house_id = room.welling_house_id
         next_soldier.status = AssignmentStatusEnum.ASSIGNED
         self.session.add(next_soldier)
         self.session.commit()

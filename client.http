@@ -1,0 +1,32 @@
+### Initialize DB schema
+POST http://127.0.0.1:8000/initializeScheme
+Content-Type: application/json
+
+{}
+
+### Assign with CSV
+POST http://127.0.0.1:8000/assignWithCsv
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="hayal_300_no_status.csv"
+Content-Type: text/csv
+
+< ./hayal_300_no_status.csv
+--WebAppBoundary--
+
+### Space report
+GET http://127.0.0.1:8000/space
+Accept: application/json
+
+### Waiting list
+GET http://127.0.0.1:8000/waitingList
+Accept: application/json
+
+### Search soldier by personal_number (ב־query param)
+GET http://127.0.0.1:8000/search?personal_number=8900353
+Accept: application/json
+
+### Search soldier by personal_number (ב־query param)
+GET http://127.0.0.1:8000/search?personal_number=80000001
+Accept: application/json

@@ -2,8 +2,11 @@ from typing import Tuple
 
 from sqlmodel import Session, select
 
+from app_api.DL.dal.room import SQLiteRoomRepository
+from app_api.DL.dal.soldiers import SQLiteSoldierRepository
+from app_api.DL.dal.welling_house import  SQLiteWellingHouseRepository
 from app_api.DL.db import AbstractDB
-from app_api.DL.dal import SQLiteSoldierRepository, SQLiteDormRepository, SQLiteRoomRepository
+
 from app_api.models import Soldier, Room, AssignmentStatusEnum
 from app_api.BL.services.assignment_strategy import AssignmentStrategy, DistanceStrategy, DistanceThenRankStrategy
 
@@ -18,11 +21,11 @@ def _get_strategy(name: str) -> AssignmentStrategy:
 
 def _build_repositories_and_session(
         db: AbstractDB,
-) -> Tuple[object, Session, SQLiteSoldierRepository, SQLiteDormRepository, SQLiteRoomRepository]:
+) -> Tuple[object, Session, SQLiteSoldierRepository, SQLiteWellingHouseRepository, SQLiteRoomRepository]:
     session_ctx = db.get_session()
     session = session_ctx.__enter__()
     s_repo = SQLiteSoldierRepository(session)
-    d_repo = SQLiteDormRepository(session)
+    d_repo = SQLiteWellingHouseRepository(session)
     r_repo = SQLiteRoomRepository(session)
     return session_ctx, session, s_repo, d_repo, r_repo
 
@@ -123,7 +126,7 @@ def _try_allocate_in_append(
         if occupancy[room.id] < room.capacity:
             soldier_orm = session.get(Soldier, soldier.personal_number)
             soldier_orm.room_id = room.id
-            soldier_orm.dorm_name = room.dorm_name
+            soldier_orm.welling_house_id = room.welling_house_id
             soldier_orm.status = AssignmentStatusEnum.ASSIGNED
             session.add(soldier_orm)
             occupancy[room.id] += 1
@@ -134,6 +137,6 @@ def _try_allocate_in_append(
 def _mark_as_waiting_for_append(session: Session, soldier: Soldier) -> None:
     soldier_orm = session.get(Soldier, soldier.personal_number)
     soldier_orm.status = AssignmentStatusEnum.WAITING
-    soldier_orm.dorm_name = None
+    soldier_orm.welling_house_id = None
     soldier_orm.room_id = None
     session.add(soldier_orm)

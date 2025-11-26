@@ -4,7 +4,7 @@ import csv
 from io import StringIO
 from typing import List
 
-from app_api.models.room import Soldier
+from app_api.models import Soldier
 
 CSV_HEADERS = [
     "מספר אישי",
@@ -36,10 +36,7 @@ def _validate_headers(fieldnames: list[str] | None) -> None:
         raise ValueError("CSV חסר שדה חובה: 'מספר אישי'")
 
 
-def _parse_row_to_soldier(
-        row: dict[str, str],
-        line_number: int,
-) -> Soldier | None:
+def _parse_row_to_soldier(row: dict[str, str], line_number: int, ) -> Soldier | None:
     personal_number = (row.get("מספר אישי") or "").strip()
     if not personal_number:
         return None

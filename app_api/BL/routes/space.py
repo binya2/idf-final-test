@@ -11,7 +11,7 @@ router = APIRouter(tags=["space"])
 @router.get("/space")
 def space_report(db: AbstractDB = Depends(get_db)) -> dict:
     with db.get_session() as session:
-        dorms = session.exec(select(WellingHouse)).all()
+        welling_houses = session.exec(select(WellingHouse)).all()
         rooms = session.exec(select(Room)).all()
         soldiers = session.exec(select(Soldier)).all()
 
@@ -21,8 +21,8 @@ def space_report(db: AbstractDB = Depends(get_db)) -> dict:
                 occupancy[s.room_id] += 1
 
         result: dict[str, dict[str, int]] = {}
-        for dorm in dorms:
-            dorm_rooms = [r for r in rooms if r.dorm_name == dorm.name]
+        for welling_house in welling_houses:
+            dorm_rooms = [r for r in rooms if r.welling_house_id == welling_house.name]
             full = partial = empty = 0
             for r in dorm_rooms:
                 occ = occupancy[r.id]
@@ -32,7 +32,7 @@ def space_report(db: AbstractDB = Depends(get_db)) -> dict:
                     full += 1
                 else:
                     partial += 1
-            result[dorm.name] = {
+            result[welling_house.name] = {
                 "full_rooms": full,
                 "partial_rooms": partial,
                 "empty_rooms": empty,

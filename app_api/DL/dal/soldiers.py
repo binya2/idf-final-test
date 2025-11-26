@@ -4,7 +4,8 @@ from typing import List
 
 from sqlmodel import Session, select
 
-from app_api.models import Soldier, AssignmentStatusEnum
+from app_api.models import Soldier
+from app_api.models.soldiers import AssignmentStatusEnum
 
 
 class SoldierRepository(ABC):
@@ -74,7 +75,7 @@ class SQLiteSoldierRepository(SoldierRepository):
         soldier = self.session.get(Soldier, pn)
         if not soldier:
             raise Exception("Not found")
-        soldier.dorm_name = None
+        soldier.welling_house_id = None
         soldier.room_id = None
         soldier.status = AssignmentStatusEnum.WAITING
         self.session.add(soldier)
