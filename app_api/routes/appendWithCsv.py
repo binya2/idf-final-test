@@ -10,9 +10,8 @@ from app_api.models.models import Soldier, Room, AssignmentStatusEnum
 from app_api.routes.handler import _build_repositories_and_session, _get_strategy
 from app_api.utils.file_service import parse_soldiers_csv
 
-router = APIRouter()
 
-router = APIRouter( tags=["appendWithCsv"])
+router = APIRouter(tags=["appendWithCsv"])
 
 @router.post("/appendWithCsv")
 async def append_with_csv(

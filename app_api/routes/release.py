@@ -8,9 +8,7 @@ from app_api.db.session import get_db
 from app_api.routes.assignWithCsv import _build_repositories_and_session, _get_strategy
 from app_api.services.release_service import ReleaseService
 
-
 router = APIRouter(tags=["release"])
-
 
 
 @router.post("/release")
