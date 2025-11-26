@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy<2.0
+sqlmodel==0.0.8
+pydantic<2
+sqlalchemy
+python-multipart
+requests
