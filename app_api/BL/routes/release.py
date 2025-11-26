@@ -3,10 +3,10 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from app_api.db.base import AbstractDB
-from app_api.db.session import get_db
-from app_api.routes.assignWithCsv import _build_repositories_and_session, _get_strategy
-from app_api.services.release_service import ReleaseService
+from app_api.DL.db import AbstractDB
+from app_api.DL.db import get_db
+from app_api.BL.routes.assignWithCsv import _build_repositories_and_session, _get_strategy
+from app_api.BL.services.release_service import ReleaseService
 
 router = APIRouter(tags=["release"])
 

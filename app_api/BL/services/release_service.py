@@ -1,8 +1,8 @@
 from sqlmodel import Session
 
-from app_api.models.dal_models import SoldierRepository
-from app_api.models.models import AssignmentStatusEnum, Soldier
-from app_api.services.assignment_strategy import AssignmentStrategy
+from app_api.BL.services.assignment_strategy import AssignmentStrategy
+from app_api.DL.dal.soldiers import SoldierRepository
+from app_api.models import Soldier, AssignmentStatusEnum
 
 
 class ReleaseService:
@@ -48,14 +48,14 @@ class ReleaseService:
         sorted_waiting = self.strategy.sort_soldiers(waiting_list)
         next_soldier = sorted_waiting[0]
 
-        from app_api.models.models import Room
+        from app_api.models.room import Room
 
         room = self.session.get(Room, freed_room_id)
         if room is None:
             return
 
         next_soldier.room_id = freed_room_id
-        next_soldier.dorm_name = room.dorm_name
+        next_soldier.welling_house_id = room.welling_house_id
         next_soldier.status = AssignmentStatusEnum.ASSIGNED
         self.session.add(next_soldier)
         self.session.commit()

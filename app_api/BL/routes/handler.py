@@ -1,39 +1,33 @@
-from typing import Literal
+from typing import Tuple
 
-from fastapi import APIRouter, UploadFile, File, Depends
 from sqlmodel import Session, select
 
-from app_api.db.base import AbstractDB
-from app_api.db.session import get_db
-from app_api.models.dal_models import SQLiteSoldierRepository
-from app_api.models.models import Soldier, Room, AssignmentStatusEnum
-from app_api.routes.handler import _build_repositories_and_session, _get_strategy
-from app_api.utils.file_service import parse_soldiers_csv
+from app_api.DL.dal.room import SQLiteRoomRepository
+from app_api.DL.dal.soldiers import SQLiteSoldierRepository
+from app_api.DL.dal.welling_house import  SQLiteWellingHouseRepository
+from app_api.DL.db import AbstractDB
+
+from app_api.models import Soldier, Room, AssignmentStatusEnum
+from app_api.BL.services.assignment_strategy import AssignmentStrategy, DistanceStrategy, DistanceThenRankStrategy
 
 
-router = APIRouter(tags=["appendWithCsv"])
+def _get_strategy(name: str) -> AssignmentStrategy:
+    if name == "distance":
+        return DistanceStrategy()
+    if name == "distanceThenRank":
+        return DistanceThenRankStrategy()
+    raise ValueError(f"unknown strategy: {name}")
 
-@router.post("/appendWithCsv")
-async def append_with_csv(
-        file: UploadFile = File(...),
-        db: AbstractDB = Depends(get_db),
-        strategy: Literal["distance", "distanceThenRank"] = "distance",
-) -> dict:
-    content = (await file.read()).decode("utf-8")
-    new_soldiers = parse_soldiers_csv(content)
 
-    session_ctx, session, s_repo, _, _ = _build_repositories_and_session(db)
-    try:
-        result = _append_and_assign_new_soldiers(
-            session=session,
-            soldier_repo=s_repo,
-            new_soldiers=new_soldiers,
-            strategy_name=strategy,
-        )
-    finally:
-        session_ctx.__exit__(None, None, None)
-
-    return result
+def _build_repositories_and_session(
+        db: AbstractDB,
+) -> Tuple[object, Session, SQLiteSoldierRepository, SQLiteWellingHouseRepository, SQLiteRoomRepository]:
+    session_ctx = db.get_session()
+    session = session_ctx.__enter__()
+    s_repo = SQLiteSoldierRepository(session)
+    d_repo = SQLiteWellingHouseRepository(session)
+    r_repo = SQLiteRoomRepository(session)
+    return session_ctx, session, s_repo, d_repo, r_repo
 
 
 def _append_and_assign_new_soldiers(
@@ -132,7 +126,7 @@ def _try_allocate_in_append(
         if occupancy[room.id] < room.capacity:
             soldier_orm = session.get(Soldier, soldier.personal_number)
             soldier_orm.room_id = room.id
-            soldier_orm.dorm_name = room.dorm_name
+            soldier_orm.welling_house_id = room.welling_house_id
             soldier_orm.status = AssignmentStatusEnum.ASSIGNED
             session.add(soldier_orm)
             occupancy[room.id] += 1
@@ -143,6 +137,6 @@ def _try_allocate_in_append(
 def _mark_as_waiting_for_append(session: Session, soldier: Soldier) -> None:
     soldier_orm = session.get(Soldier, soldier.personal_number)
     soldier_orm.status = AssignmentStatusEnum.WAITING
-    soldier_orm.dorm_name = None
+    soldier_orm.welling_house_id = None
     soldier_orm.room_id = None
     session.add(soldier_orm)
