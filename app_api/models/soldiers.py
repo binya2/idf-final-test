@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import Optional
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
+
+from app_api.models import Room
 
 
 class AssignmentStatusEnum(str, Enum):
@@ -20,8 +22,9 @@ class Soldier(SQLModel, table=True):
     distance_km: int
     rank: Optional[int] = Field(default=None)
 
-    status: AssignmentStatusEnum = Field(
-        default=AssignmentStatusEnum.WAITING, index=True
-    )
-    dorm_name: Optional[str] = Field(default=None, foreign_key="dorms.name")
+    status: AssignmentStatusEnum = Field(default=AssignmentStatusEnum.WAITING)
+
+    welling_house_id: Optional[int] = Field(default=None, foreign_key="welling_house.id")
     room_id: Optional[int] = Field(default=None, foreign_key="rooms.id")
+
+    room: Optional["Room"] = Relationship(back_populates="soldiers")

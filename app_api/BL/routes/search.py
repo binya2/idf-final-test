@@ -15,7 +15,7 @@ def search_soldier(
     with db.get_session() as session:
         s = session.get(Soldier, personal_number)
         if not s:
-            raise HTTPException(status_code=404, detail="חייל לא נמצא")
+            raise HTTPException(status_code=404, detail="Soldier not found")
 
         assigned = s.status == AssignmentStatusEnum.ASSIGNED
         in_waiting = s.status == AssignmentStatusEnum.WAITING
@@ -25,7 +25,7 @@ def search_soldier(
         "first_name": s.first_name,
         "last_name": s.last_name,
         "assigned": assigned,
-        "dorm_name": s.dorm_name,
+        "welling_house_id": s.welling_house_id,
         "room_number": s.room_id,
         "in_waiting_list": in_waiting,
     }

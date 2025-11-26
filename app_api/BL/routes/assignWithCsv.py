@@ -22,12 +22,12 @@ async def assign_with_csv(
     content = (await file.read()).decode("utf-8")
     soldiers = parse_soldiers_csv(content)
 
-    session_ctx, session, s_repo, d_repo, r_repo = _build_repositories_and_session(db)
+    session_ctx, session, s_repo, w_h_repo, r_repo = _build_repositories_and_session(db)
     try:
         strat = _get_strategy(strategy)
         service = AssignmentService(
             soldier_repo=s_repo,
-            dorm_repo=d_repo,
+            welling_house_repo=w_h_repo,
             room_repo=r_repo,
             session=session,
             strategy=strat,

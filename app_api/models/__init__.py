@@ -1,9 +1,5 @@
+from .welling_house import WellingHouse
 from .room import Room
-from .welling_house import  WellingHouse
-from .soldiers import Soldier
-from .soldiers import AssignmentStatusEnum
-from app_api.DL.dal import (
-    SoldierRepository,
-    DormRepository,
-    SQLiteSoldierRepository,
-)
+from .soldiers import Soldier, AssignmentStatusEnum
+
+__all__ = ["WellingHouse", "Room", "Soldier", "AssignmentStatusEnum"]
