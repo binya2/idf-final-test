@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlmodel import select
 
 from app_api.DL.db.base import AbstractDB
-from app_api.DL.db.session import get_db
+from app_api.DL.db.config import get_db
 from app_api.models import Soldier, AssignmentStatusEnum
 from app_api.BL.services.assignment_strategy import DistanceStrategy
 

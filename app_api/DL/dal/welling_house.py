@@ -31,7 +31,7 @@ class SQLiteWellingHouseRepository(WellingHouseRepository):
             self.session.flush()
             for i in range(1, welling_house.rooms_count + 1):
                 room = Room(
-                    room_number=i,  # לפי הסכמה שלך
+                    room_number=i,
                     capacity=welling_house.room_capacity,
                     welling_house_id=welling_house.id,
                 )

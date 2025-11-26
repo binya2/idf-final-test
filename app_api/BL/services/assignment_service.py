@@ -34,7 +34,7 @@ class AssignmentService:
         self.strategy = strategy
 
     def assign_from_soldiers(self, soldiers: Iterable[Soldier]) -> dict:
-        self._prepare_dorms_and_soldiers(soldiers)
+        self._prepare_welling_houses_and_soldiers(soldiers)
 
         all_soldiers = self.soldier_repo.get_all()
         sorted_soldiers = self.strategy.sort_soldiers(all_soldiers)
@@ -50,7 +50,7 @@ class AssignmentService:
         self.session.commit()
         return self._build_assignment_response(sorted_soldiers, counters)
 
-    def _prepare_dorms_and_soldiers(
+    def _prepare_welling_houses_and_soldiers(
             self, soldiers: Iterable[Soldier]
     ) -> None:
         self.welling_house_repo.ensure_default_welling_house()
