@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Iterable, List
 
-from app_api.models.models import Soldier
+from app_api.models.room import Soldier
 
 
 class AssignmentStrategy(ABC):

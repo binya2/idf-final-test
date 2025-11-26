@@ -1,39 +1,30 @@
-from typing import Literal
+from typing import Tuple
 
-from fastapi import APIRouter, UploadFile, File, Depends
 from sqlmodel import Session, select
 
-from app_api.db.base import AbstractDB
-from app_api.db.session import get_db
-from app_api.models.dal_models import SQLiteSoldierRepository
-from app_api.models.models import Soldier, Room, AssignmentStatusEnum
-from app_api.routes.handler import _build_repositories_and_session, _get_strategy
-from app_api.utils.file_service import parse_soldiers_csv
+from app_api.DL.db import AbstractDB
+from app_api.DL.dal import SQLiteSoldierRepository, SQLiteDormRepository, SQLiteRoomRepository
+from app_api.models import Soldier, Room, AssignmentStatusEnum
+from app_api.BL.services.assignment_strategy import AssignmentStrategy, DistanceStrategy, DistanceThenRankStrategy
 
 
-router = APIRouter(tags=["appendWithCsv"])
+def _get_strategy(name: str) -> AssignmentStrategy:
+    if name == "distance":
+        return DistanceStrategy()
+    if name == "distanceThenRank":
+        return DistanceThenRankStrategy()
+    raise ValueError(f"unknown strategy: {name}")
 
-@router.post("/appendWithCsv")
-async def append_with_csv(
-        file: UploadFile = File(...),
-        db: AbstractDB = Depends(get_db),
-        strategy: Literal["distance", "distanceThenRank"] = "distance",
-) -> dict:
-    content = (await file.read()).decode("utf-8")
-    new_soldiers = parse_soldiers_csv(content)
 
-    session_ctx, session, s_repo, _, _ = _build_repositories_and_session(db)
-    try:
-        result = _append_and_assign_new_soldiers(
-            session=session,
-            soldier_repo=s_repo,
-            new_soldiers=new_soldiers,
-            strategy_name=strategy,
-        )
-    finally:
-        session_ctx.__exit__(None, None, None)
-
-    return result
+def _build_repositories_and_session(
+        db: AbstractDB,
+) -> Tuple[object, Session, SQLiteSoldierRepository, SQLiteDormRepository, SQLiteRoomRepository]:
+    session_ctx = db.get_session()
+    session = session_ctx.__enter__()
+    s_repo = SQLiteSoldierRepository(session)
+    d_repo = SQLiteDormRepository(session)
+    r_repo = SQLiteRoomRepository(session)
+    return session_ctx, session, s_repo, d_repo, r_repo
 
 
 def _append_and_assign_new_soldiers(

@@ -3,9 +3,10 @@ from typing import Iterable
 from dataclasses import dataclass
 from sqlmodel import Session
 
-from app_api.models.dal_models import SoldierRepository, DormRepository, RoomRepository
-from app_api.models.models import Room, Soldier, AssignmentStatusEnum
-from app_api.services.assignment_strategy import AssignmentStrategy
+from app_api.BL.services.assignment_strategy import AssignmentStrategy
+from app_api.DL.dal.room import RoomRepository
+from app_api.DL.dal.soldiers import SoldierRepository
+from app_api.DL.dal.welling_house import WellingHouseRepository
 
 MAX_BASE_CAPACITY = 160
 
@@ -19,7 +20,7 @@ class AssignmentService:
     def __init__(
         self,
         soldier_repo: SoldierRepository,
-        dorm_repo: DormRepository,
+        dorm_repo: WellingHouseRepository,
         room_repo: RoomRepository,
         session: Session,
         strategy: AssignmentStrategy,

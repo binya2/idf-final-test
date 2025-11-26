@@ -1,11 +1,10 @@
-
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional, Dict
 from typing import List
 
 from sqlmodel import Session, select
 
-from app_api.models.models import WellingHouse, Soldier, Room, AssignmentStatusEnum
+from app_api.models import Soldier, AssignmentStatusEnum
 
 
 class SoldierRepository(ABC):
@@ -27,26 +26,6 @@ class SoldierRepository(ABC):
 
     @abstractmethod
     def remove_assignment(self, pn: str) -> None:
-        raise NotImplementedError
-
-
-class DormRepository(ABC):
-    @abstractmethod
-    def ensure_default_dorms(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_all(self) -> List[WellingHouse]:
-        raise NotImplementedError
-
-
-class RoomRepository(ABC):
-    @abstractmethod
-    def get_all(self) -> List[Room]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def clear_all_assignments(self) -> None:
         raise NotImplementedError
 
 
@@ -99,46 +78,4 @@ class SQLiteSoldierRepository(SoldierRepository):
         soldier.room_id = None
         soldier.status = AssignmentStatusEnum.WAITING
         self.session.add(soldier)
-        self.session.commit()
-
-
-class SQLiteDormRepository(DormRepository):
-    def __init__(self, session: Session) -> None:
-        self.session = session
-
-    def ensure_default_dorms(self) -> None:
-        existing = self.session.exec(select(WellingHouse)).all()
-        if existing:
-            return
-
-        for name in ("Dorm A", "Dorm B"):
-            dorm = WellingHouse(name=name, rooms_count=10, room_capacity=8)
-            self.session.add(dorm)
-            for i in range(1, 11):
-                room = Room(
-                    dorm_name=name,
-                    room_number=i,
-                    capacity=8,
-                )
-                self.session.add(room)
-        self.session.commit()
-
-    def get_all(self) -> List[WellingHouse]:
-        return self.session.exec(select(WellingHouse)).all()
-
-
-class SQLiteRoomRepository(RoomRepository):
-    def __init__(self, session: Session) -> None:
-        self.session = session
-
-    def get_all(self) -> List[Room]:
-        return self.session.exec(select(Room)).all()
-
-    def clear_all_assignments(self) -> None:
-        soldiers = self.session.exec(select(Soldier)).all()
-        for s in soldiers:
-            s.dorm_name = None
-            s.room_id = None
-            s.status = AssignmentStatusEnum.WAITING
-            self.session.add(s)
         self.session.commit()

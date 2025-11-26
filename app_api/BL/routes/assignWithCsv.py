@@ -3,11 +3,12 @@ from typing import Literal
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from starlette import status
 
-from app_api.db.base import AbstractDB
-from app_api.db.session import get_db
-from app_api.routes.handler import _build_repositories_and_session, _get_strategy
-from app_api.services.assignment_service import AssignmentService
-from app_api.utils.file_service import parse_soldiers_csv
+
+from app_api.BL.routes.handler import _build_repositories_and_session, _get_strategy
+from app_api.BL.services import AssignmentService
+from app_api.BL.utils.file_service import parse_soldiers_csv
+from app_api.DL.db.base import AbstractDB
+from app_api.DL.db.session import get_db
 
 router = APIRouter(tags=["assignWithCsv"])
 
