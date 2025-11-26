@@ -3,8 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .bed import Bed
-from .room import Room
+
 
 
 class PlacementStatus(Enum):
@@ -28,4 +27,4 @@ class SoldierResponse(BaseModel):
     first_name: str
     last_name: str
     placement_status:bool
-    placement: str = Optional[tuple[Room.id, Bed.id]]
+    placement: str = Optional[tuple[int,int]]
