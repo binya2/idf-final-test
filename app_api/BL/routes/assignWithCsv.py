@@ -8,7 +8,7 @@ from app_api.BL.routes.handler import _build_repositories_and_session, _get_stra
 from app_api.BL.services import AssignmentService
 from app_api.BL.utils.file_service import parse_soldiers_csv
 from app_api.DL.db.base import AbstractDB
-from app_api.DL.db.session import get_db
+from app_api.DL.db.config import get_db
 
 router = APIRouter(tags=["assignWithCsv"])
 

@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, UploadFile, File, Depends
 
 from app_api.DL.db import AbstractDB
-from app_api.DL.db import get_db
+from app_api.DL.db.config import get_db
 from app_api.BL.routes.handler import _build_repositories_and_session, _append_and_assign_new_soldiers
 from app_api.BL.utils.file_service import parse_soldiers_csv
 

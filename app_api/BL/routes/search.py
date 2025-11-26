@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app_api.DL.db import AbstractDB
-from app_api.DL.db import get_db
+from app_api.DL.db.config import get_db
 from app_api.models import Soldier, AssignmentStatusEnum
 
 router = APIRouter(tags=["space"])

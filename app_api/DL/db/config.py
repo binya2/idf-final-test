@@ -31,3 +31,7 @@ class SQLiteDB(AbstractDB):
 
     def dispose(self) -> None:
         self._engine.dispose()
+
+
+def get_db() -> AbstractDB:
+    return SQLiteDB(settings.database_url)
