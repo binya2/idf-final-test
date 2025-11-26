@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from .bed import Bed
-    from .dwelling_house import WellingHouse
+    from .welling_house import WellingHouse
 
 
 class Room(SQLModel, table=True):
