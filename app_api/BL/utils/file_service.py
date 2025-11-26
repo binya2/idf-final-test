@@ -33,7 +33,7 @@ def _validate_headers(fieldnames: list[str] | None) -> None:
     if fieldnames is None:
         return
     if "מספר אישי" not in fieldnames:
-        raise ValueError("CSV חסר שדה חובה: 'מספר אישי'")
+        raise ValueError("CSV is missing a required field: 'Personal Number'")
 
 
 def _parse_row_to_soldier(row: dict[str, str], line_number: int, ) -> Soldier | None:

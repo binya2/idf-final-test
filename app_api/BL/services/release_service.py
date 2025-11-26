@@ -28,7 +28,7 @@ class ReleaseService:
     def _get_soldier_or_raise(self, personal_number: str) -> Soldier:
         soldier = self.soldier_repo.get_by_personal_number(personal_number)
         if not soldier:
-            raise Exception(f"לא נמצא חייל לשחרור: {personal_number}")
+            raise Exception(f"No soldier found for release: {personal_number}")
         return soldier
 
     def _release_soldier_to_waiting(self, soldier: Soldier) -> int | None:
