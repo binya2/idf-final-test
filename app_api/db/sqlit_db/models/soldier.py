@@ -17,6 +17,6 @@ class Soldier(SQLModel, table=True):
     age: int
     city_residence: str
     distance_from_base_km: int
-    PlacementStatus: str
+    placement_status: str
     bed: Optional["Bed"] = Relationship(back_populates="soldier", sa_relationship_kwargs={"uselist": False})
 
