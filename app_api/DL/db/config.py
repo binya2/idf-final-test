@@ -4,7 +4,7 @@ from typing import Iterator
 from pydantic import BaseSettings
 from sqlmodel import create_engine, SQLModel, Session
 
-from app_api.db.base import AbstractDB
+from app_api.DL.db.base import AbstractDB
 
 
 class Settings(BaseSettings):
@@ -31,3 +31,7 @@ class SQLiteDB(AbstractDB):
 
     def dispose(self) -> None:
         self._engine.dispose()
+
+
+def get_db() -> AbstractDB:
+    return SQLiteDB(settings.database_url)

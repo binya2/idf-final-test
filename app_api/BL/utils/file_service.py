@@ -4,7 +4,7 @@ import csv
 from io import StringIO
 from typing import List
 
-from app_api.models.models import Soldier
+from app_api.models import Soldier
 
 CSV_HEADERS = [
     "מספר אישי",
@@ -17,10 +17,6 @@ CSV_HEADERS = [
 
 
 def parse_soldiers_csv(content: str) -> List[Soldier]:
-    """
-    מצפה ל-CSV עם כותרת בעברית:
-    מספר אישי,שם פרטי,שם משפחה,מין,עיר מגורים,מרחק מהבסיס
-    """
     reader = csv.DictReader(StringIO(content))
     _validate_headers(reader.fieldnames)
 
@@ -37,13 +33,10 @@ def _validate_headers(fieldnames: list[str] | None) -> None:
     if fieldnames is None:
         return
     if "מספר אישי" not in fieldnames:
-        raise ValueError("קובץ CSV ללא עמודת 'מספר אישי'")
+        raise ValueError("CSV is missing a required field: 'Personal Number'")
 
 
-def _parse_row_to_soldier(
-        row: dict[str, str],
-        line_number: int,
-) -> Soldier | None:
+def _parse_row_to_soldier(row: dict[str, str], line_number: int, ) -> Soldier | None:
     personal_number = (row.get("מספר אישי") or "").strip()
     if not personal_number:
         return None
